@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>💌 Một điều Việt muốn nói</title>
+  <style>
+    :root{
+      --bg1:#fff1f7; --bg2:#ffe7ef; --card:#ffffffcc;
+      --text:#2b2b2b; --pink:#ff4d88; --pink2:#ff7aa8;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; min-height:100vh;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+      color:var(--text);
+      background: radial-gradient(circle at 20% 20%, var(--bg1), var(--bg2));
+      overflow:hidden;
+      display:grid; place-items:center;
+      padding:24px;
+    }
+    .card{
+      width:min(720px, 92vw);
+      background:var(--card);
+      backdrop-filter: blur(10px);
+      border:1px solid #ffffff;
+      border-radius:24px;
+      padding:28px;
+      box-shadow:0 18px 60px rgba(255,77,136,.18);
+      position:relative;
+    }
+    h1{margin:0 0 8px; font-size: clamp(26px, 3.6vw, 38px);}
+    .sub{opacity:.8; margin:0 0 18px; line-height:1.5}
+    .bubble{
+      margin:18px 0 22px;
+      padding:18px 16px;
+      background:#fff;
+      border-radius:18px;
+      border:1px solid rgba(0,0,0,.06);
+      line-height:1.7;
+      font-size: clamp(15px, 2.2vw, 18px);
+    }
+    .name{
+      display:inline-block;
+      padding:2px 10px;
+      border-radius:999px;
+      background: rgba(255,77,136,.12);
+      color: var(--pink);
+      font-weight:700;
+    }
+    .actions{
+      display:flex; flex-wrap:wrap; gap:12px;
+      margin-top:10px;
+      position:relative;
+      min-height:56px;
+    }
+    button{
+      border:0; cursor:pointer;
+      padding:14px 18px;
+      border-radius:14px;
+      font-weight:700;
+      font-size:16px;
+      transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+      user-select:none;
+    }
+    #yes{
+      background: linear-gradient(135deg, var(--pink), var(--pink2));
+      color:#fff;
+      box-shadow:0 12px 26px rgba(255,77,136,.28);
+    }
+    #yes:hover{transform: translateY(-1px) scale(1.01)}
+    #no{
+      background:#f2f2f2;
+      color:#333;
+      position:relative;
+    }
+    .footer{
+      margin-top:18px;
+      font-size:13px;
+      opacity:.65;
+    }
+
+    /* Modal */
+    .modal{
+      position:fixed; inset:0;
+      display:none;
+      align-items:center; justify-content:center;
+      background: rgba(0,0,0,.35);
+      padding:22px;
+    }
+    .modal .box{
+      width:min(520px, 92vw);
+      background:#fff;
+      border-radius:18px;
+      padding:20px 18px;
+      box-shadow:0 20px 80px rgba(0,0,0,.25);
+      text-align:center;
+    }
+    .modal h2{margin:6px 0 8px}
+    .modal p{margin:0 0 14px; line-height:1.6}
+    .close{
+      background:#111; color:#fff;
+      border-radius:12px;
+      padding:12px 16px;
+    }
+
+    /* Hearts */
+    .heart{
+      position:fixed;
+      left:0; top:0;
+      pointer-events:none;
+      font-size:18px;
+      will-change: transform, opacity;
+      filter: drop-shadow(0 6px 10px rgba(255,77,136,.25));
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>💌 Gửi <span class="name" id="crushName">Hằng Vũ</span></h1>
+    <p class="sub">Việt có một vài điều muốn nói với Hằng, hy vọng Hằng sẽ đọc hết 😳</p>
+
+    <div class="bubble" id="message">
+      <!-- SỬA NỘI DUNG Ở ĐÂY -->
+      Thời gian vừa qua được ở bên Hằng, Việt cảm thấy rất vui và hạnh phúc. Những gì cần nói thì Việt cũng đã nói rồi, chỉ là Việt nghĩ đã đến lúc ngỏ lời với Hằng thôi. Hằng làm người yêu Việt nhé! 💖
+    </div>
+
+    <div class="actions" id="actions">
+      <button id="yes">Đồng ý 💖</button>
+      <button id="no">Từ chối 🙈</button>
+    </div>
+
+    <div class="footer"></div>
+  </div>
+
+  <div class="modal" id="modal">
+    <div class="box">
+      <div style="font-size:42px">😋</div>
+      <h2>Tuyệt, vậy thì từ nay Việt sẽ là người yêu của Hằng nhé 💞
+      </h2>
+      <p id="replyText">Hẹn gặp Hằng vào tháng 7 ☕️</p>
+      <button class="close" id="close">Oke luôn</button>
+    </div>
+  </div>
+
+  <script>
+    // 1) TÙY CHỈNH NHANH:
+    const CONFIG = {
+      crushName: "Hằng Vũ",
+      acceptedReply: "Hẹn gặp lại Hằng vào tháng 7, Việt mong đến lúc đó quá ☕️",
+      heartsPerSecond: 4
+    };
+
+    document.getElementById("crushName").textContent = CONFIG.crushName;
+    document.getElementById("replyText").textContent = CONFIG.acceptedReply;
+
+    // 2) Hiệu ứng tim bay
+    function spawnHeart(x = Math.random() * window.innerWidth) {
+      const el = document.createElement("div");
+      el.className = "heart";
+      el.textContent = Math.random() < 0.5 ? "💖" : "💗";
+      const startY = window.innerHeight + 10;
+      const drift = (Math.random() - 0.5) * 160;
+      const size = 14 + Math.random() * 18;
+
+      el.style.left = x + "px";
+      el.style.top = startY + "px";
+      el.style.fontSize = size + "px";
+      document.body.appendChild(el);
+
+      const dur = 2600 + Math.random() * 1400;
+      const start = performance.now();
+
+      function tick(t){
+        const p = Math.min(1, (t - start) / dur);
+        const ease = 1 - Math.pow(1 - p, 3);
+        const y = startY - ease * (window.innerHeight + 220);
+        const xx = x + drift * ease;
+        el.style.transform = `translate(${xx - x}px, ${y - startY}px) rotate(${ease * 25}deg)`;
+        el.style.opacity = String(1 - p);
+        if (p < 1) requestAnimationFrame(tick);
+        else el.remove();
+      }
+      requestAnimationFrame(tick);
+    }
+
+    setInterval(() => {
+      for (let i = 0; i < CONFIG.heartsPerSecond; i++) spawnHeart();
+    }, 1000);
+
+    // 3) Nút "Từ chối" né vui vui
+    const noBtn = document.getElementById("no");
+    const actions = document.getElementById("actions");
+
+    function moveNoButton(){
+      const rect = actions.getBoundingClientRect();
+      const btnRect = noBtn.getBoundingClientRect();
+      const maxX = rect.width - btnRect.width;
+      const maxY = rect.height - btnRect.height;
+
+      // Nếu actions quá thấp, tăng chiều cao để có chỗ né
+      actions.style.minHeight = "120px";
+
+      const x = Math.max(0, Math.random() * maxX);
+      const y = Math.max(0, Math.random() * maxY);
+
+      noBtn.style.position = "absolute";
+      noBtn.style.left = x + "px";
+      noBtn.style.top = y + "px";
+      noBtn.style.transform = "scale(1.02)";
+      setTimeout(()=> noBtn.style.transform = "scale(1)", 120);
+
+      spawnHeart(btnRect.left + btnRect.width/2);
+    }
+
+    noBtn.addEventListener("mouseenter", moveNoButton);
+    noBtn.addEventListener("click", moveNoButton);
+
+    // 4) Nút "Đồng ý" mở modal
+    const modal = document.getElementById("modal");
+    document.getElementById("yes").addEventListener("click", () => {
+      modal.style.display = "flex";
+      for (let i=0;i<20;i++) setTimeout(()=>spawnHeart(window.innerWidth/2), i*40);
+    });
+    document.getElementById("close").addEventListener("click", () => {
+      modal.style.display = "none";
+    });
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) modal.style.display = "none";
+    });
+  </script>
+</body>
+</html>
